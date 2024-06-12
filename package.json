@@ -1,0 +1,27 @@
+{
+  "name": "one-finance",
+  "version": "1.0.0",
+  "description": "Connect to ONE Finance as a bank aggregator",
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "author": "Jarrett Sorensen",
+  "license": "MIT",
+  "prettier": {
+    "printWidth": 120,
+    "singleQuote": true
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.14.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "keywords": [
+    "banking",
+    "finance",
+    "data aggregator",
+    "ONE Finance"
+  ]
+}
