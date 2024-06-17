@@ -1,9 +1,11 @@
+import { randomUUID } from 'crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { Transaction, TransactionsResponse, TransactionsState } from '../models/transactions.interface';
 
 const transactionsStateFileName = './db/transactions.json';
 let directoryExists: boolean;
 let state: TransactionsState;
+let limit = 40;
 
 async function fetchTransactions(
   pocketId: string,
@@ -11,7 +13,7 @@ async function fetchTransactions(
   token: string,
   next: string | undefined
 ): Promise<TransactionsResponse> {
-  let transactionsUrl = `https://api.one.app/banking/pockets/${pocketId}/transactions?limit=40&pocketId=${pocketId}&userId=${userId}`;
+  let transactionsUrl = `https://api.one.app/banking/pockets/${pocketId}/transactions?limit=${limit}&pocketId=${pocketId}&userId=${userId}`;
   if (next) {
     transactionsUrl += `&next=${next}`;
   }
@@ -19,7 +21,7 @@ async function fetchTransactions(
   const options = {
     headers: new Headers([
       ['Authorization', `Bearer ${token}`],
-      ['X-Safe-Request-ID', '66fe1e2b-1aa4-44f4-8814-948a608a1e0b'],
+      ['X-Safe-Request-ID', randomUUID()],
     ]),
   };
   const response = await fetch(transactionsUrl, options);
