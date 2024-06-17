@@ -99,6 +99,7 @@ export async function fetchAllTransactions(
     }
     transactions.push(...response.transactions);
     next = response.next;
+    fetchMore = !!JSON.parse(atob(next ?? '{}')).next;
   } while (next && fetchMore);
   console.log('total transactions for pocket', transactions.length);
 
