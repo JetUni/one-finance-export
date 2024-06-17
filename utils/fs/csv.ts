@@ -5,7 +5,9 @@ import { Transaction } from '../../models/transactions.interface';
 
 export function saveTransactionsCsv(pockets: Pocket[], transactions: Transaction[]) {
   const headers =
-    'Date,Description,Category,Amount,Account,Account #,Institution,Transaction ID,Account ID,Metadata,Note';
+    'Date,Description,Category,Amount,Account,Account #,Institution,Month,Week,Transaction ID,Account ID,Check Number,Full Description,Date Added,Metadata,Categorized Date,Note';
+  const now = new Date().toLocaleDateString();
+
   const pocketIdMap = pockets.reduce<Record<string, Pocket>>((acc, pocket) => {
     acc[pocket.pocket_id] = pocket;
     return acc;
@@ -13,23 +15,40 @@ export function saveTransactionsCsv(pockets: Pocket[], transactions: Transaction
   const rows = transactions.map((transaction) => {
     const pocket = pocketIdMap[transaction.pocket_id];
     const { account_number, name } = pocket;
-    const { amount, comment, date, description, is_debit, trn_id, user_transaction_date } = transaction;
+    const { amount, category, comment, date, description, is_debit, trn_id, user_transaction_date } = transaction;
     const localDate = new Date(user_transaction_date || date).toLocaleDateString('sv-SE');
-    return `${localDate},"${description}",,${is_debit ? amount * -1 : amount},${name},xxxx${account_number.slice(
+    const weekDateTime = new Date(`${localDate} 00:00:00 AM`);
+    weekDateTime.setDate(weekDateTime.getDate() - weekDateTime.getDay());
+    const monthDateTime = new Date(`${localDate} 00:00:00 AM`);
+    monthDateTime.setDate(1);
+
+    return `${localDate},"${description}",${category},${
+      is_debit ? amount * -1 : amount
+    },${name},xxxx${account_number.slice(
       -4
-    )},One Finance,${trn_id},${account_number.slice(-4)},"{'one_finance': 'https://github.com/JetUni/one-finance'}",${
+    )},One Finance,${monthDateTime.toLocaleDateString()},${weekDateTime.toLocaleDateString()},${trn_id},${account_number.slice(
+      -4
+    )},,"${description}",${now},"{""one-finance-export"":{""type"":""transaction"",""website"":""https://github.com/JetUni/one-finance-export""}}",,"${
       comment || ''
-    }`;
+    }"`;
   });
 
   writeFileSync('./output/transactions.csv', [headers, ...rows].join('\n'), { encoding: 'utf-8' });
 }
 
 export function saveBalanceHistoryCsv(balanceHistory: BalanceHistory[]) {
-  const headers = 'Date,Time,Account,Account #,Account ID,Balance ID,Institution,Balance,Type,Class,Account Status';
+  const headers =
+    'Date,Time,Account,Account #,Account ID,Balance ID,Institution,Balance,Month,Week,Type,Class,Account Status,Date Added';
+  const now = new Date().toLocaleDateString();
+
   const rows = balanceHistory.map((history) => {
     const { date, time, accountName, accountNumber, accountId, balanceId, balance, type, status } = history;
-    return `${date},${time},${accountName},${accountNumber},${accountId},${balanceId},One Finance,${balance},${type},Asset,${status}`;
+    const weekDateTime = new Date(`${date} 00:00:00 AM`);
+    weekDateTime.setDate(weekDateTime.getDate() - weekDateTime.getDay());
+    const monthDateTime = new Date(`${date} 00:00:00 AM`);
+    monthDateTime.setDate(1);
+
+    return `${date},${time},${accountName},${accountNumber},${accountId},${balanceId},One Finance,${balance},${monthDateTime.toLocaleDateString()},${weekDateTime.toLocaleDateString()},${type},Asset,${status},${now}`;
   });
 
   writeFileSync('./output/balance-history.csv', [headers, ...rows].join('\n'), { encoding: 'utf-8' });
