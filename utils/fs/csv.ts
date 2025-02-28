@@ -14,7 +14,7 @@ export function saveTransactionsCsv(pockets: Pocket[], transactions: Transaction
   }, {});
   const rows = transactions.map((transaction) => {
     const pocket = pocketIdMap[transaction.pocket_id];
-    const { account_number, name } = pocket;
+    const { account_number, name, pocket_id } = pocket;
     const { amount, category, comment, date, description, is_debit, trn_id, user_transaction_date } = transaction;
     const localDate = new Date(user_transaction_date || date).toLocaleDateString('sv-SE');
     const weekDateTime = new Date(`${localDate} 00:00:00 AM`);
@@ -26,9 +26,9 @@ export function saveTransactionsCsv(pockets: Pocket[], transactions: Transaction
       is_debit ? amount * -1 : amount
     },${name},xxxx${account_number.slice(
       -4
-    )},One Finance,${monthDateTime.toLocaleDateString()},${weekDateTime.toLocaleDateString()},${trn_id},${account_number.slice(
-      -4
-    )},,"${description}",${now},"{""one-finance-export"":{""type"":""transaction"",""website"":""https://github.com/JetUni/one-finance-export""}}",,"${
+    )},One Finance,${monthDateTime.toLocaleDateString()},${weekDateTime.toLocaleDateString()},${trn_id},${
+      pocket_id.split('.')[1]
+    },,"${description}",${now},"{""one-finance-export"":{""type"":""transaction"",""website"":""https://github.com/JetUni/one-finance-export""}}",,"${
       comment || ''
     }"`;
   });
@@ -48,7 +48,9 @@ export function saveBalanceHistoryCsv(balanceHistory: BalanceHistory[]) {
     const monthDateTime = new Date(`${date} 00:00:00 AM`);
     monthDateTime.setDate(1);
 
-    return `${date},${time},${accountName},${accountNumber},${accountId},${balanceId},One Finance,${balance},${monthDateTime.toLocaleDateString()},${weekDateTime.toLocaleDateString()},${type},Asset,${status},${now}`;
+    return `${date},${time},${accountName},${accountNumber},${accountId},${balanceId},One Finance,${
+      balance / 100
+    },${monthDateTime.toLocaleDateString()},${weekDateTime.toLocaleDateString()},${type},Asset,${status},${now}`;
   });
 
   writeFileSync('./output/balance-history.csv', [headers, ...rows].join('\n'), { encoding: 'utf-8' });
