@@ -73,6 +73,7 @@ export async function fetchAllTransactions(
   pocketId: string,
   userId: string,
   token: string,
+  endDate: string,
   recentOnly?: boolean
 ): Promise<Transaction[]> {
   const transactions: Transaction[] = [];
@@ -83,22 +84,28 @@ export async function fetchAllTransactions(
 
   do {
     response = await fetchTransactions(pocketId, userId, token, next);
+    const filteredTransactions = response.transactions.filter((transaction) => transaction.date < endDate);
 
     const lastUpdate = state[pocketId]?.lastUpdate;
     if (lastUpdate) {
       if (recentOnly) {
-        response.transactions.sort(transactionsCompareFn);
-        const olderTransaction = response.transactions.findIndex((transaction) => transaction.date <= lastUpdate.date);
+        filteredTransactions.sort(transactionsCompareFn);
+        const olderTransaction = filteredTransactions.findIndex((transaction) => transaction.date <= lastUpdate.date);
         if (olderTransaction === 0) {
           console.log('no new transactions found');
           return [];
         }
-        console.log(`found ${response.transactions.length} transactions, but only ${olderTransaction - 1} are new`);
-        response.transactions.splice(olderTransaction, response.transactions.length - olderTransaction);
-        fetchMore = false;
+        if (olderTransaction > 0) {
+          console.log(`found ${filteredTransactions.length} transactions, but only ${olderTransaction} are new`);
+          filteredTransactions.splice(olderTransaction, filteredTransactions.length - olderTransaction);
+          transactions.push(...filteredTransactions);
+          break;
+        }
       }
     }
-    transactions.push(...response.transactions);
+
+    console.log('fetched', filteredTransactions.length, 'new transactions');
+    transactions.push(...filteredTransactions);
     next = response.next;
   } while (next);
   console.log('total transactions for pocket', transactions.length);

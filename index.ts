@@ -18,7 +18,13 @@ async function main() {
 
     for (const pocket of pockets) {
       console.log('fetching transactions for pocket', pocket.name);
-      const transactionsForPocket = await fetchAllTransactions(pocket.pocket_id, userId, token, true);
+      const transactionsForPocket = await fetchAllTransactions(
+        pocket.pocket_id,
+        userId,
+        token,
+        now.toISOString(),
+        true
+      );
       transactions.push(...transactionsForPocket);
 
       const pocketBalanceHistory = generatePocketBalanceHistory(
