@@ -59,10 +59,11 @@ export function generatePocketBalanceHistory(
 
   loadState();
 
+  let currentBalance = 0;
   const transactionBalanceMap = transactions
     .reverse()
     .reduce<{ [date: string]: BalanceHistory[] }>((map, transaction) => {
-      const { balance, date, pocket_id, pocket_name, user_transaction_date } = transaction;
+      const { date, pocket_id, pocket_name, user_transaction_date } = transaction;
 
       const transactionDate = new Date(user_transaction_date || date);
       const localDate = transactionDate.toLocaleDateString('sv-SE');
@@ -72,7 +73,7 @@ export function generatePocketBalanceHistory(
         accountId: pocket_id.split('.')[1],
         accountName: pocket_name,
         accountNumber: `xxxx${account_number.slice(-4)}`,
-        balance,
+        balance: currentBalance + transaction.amount * (transaction.is_debit ? -100 : 100),
         balanceId: randomUUID().replace(/-/g, ''),
         date: localDate,
         dateTime: user_transaction_date || date,
@@ -80,6 +81,7 @@ export function generatePocketBalanceHistory(
         time: localTime,
         type,
       };
+      currentBalance = history.balance;
       if (!map[localDate]) {
         map[localDate] = [];
       }
