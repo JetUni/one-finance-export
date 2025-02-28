@@ -35,7 +35,7 @@ async function main() {
 
     const uniqueObjMap: { [key: string]: Transaction } = {};
     for (const transaction of transactions) {
-      if (!uniqueObjMap[transaction.trn_id]) {
+      if (!uniqueObjMap[transaction.pocket_id + '+' + transaction.trn_id]) {
         uniqueObjMap[transaction.pocket_id + '+' + transaction.trn_id] = transaction;
       }
     }
