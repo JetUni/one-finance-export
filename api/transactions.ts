@@ -13,7 +13,7 @@ async function fetchTransactions(
   token: string,
   next: string | undefined
 ): Promise<TransactionsResponse> {
-  let transactionsUrl = `https://api.one.app/banking/pockets/${pocketId}/transactions?limit=${limit}&pocketId=${pocketId}&userId=${userId}`;
+  let transactionsUrl = `https://api.one.app/banking/pockets/${pocketId}/transaction/all?limit=${limit}&pocketId=${pocketId}&userId=${userId}`;
   if (next) {
     transactionsUrl += `&next=${next}`;
   }
@@ -78,7 +78,6 @@ export async function fetchAllTransactions(
   const transactions: Transaction[] = [];
   let response: TransactionsResponse | undefined;
   let next: string | undefined;
-  let fetchMore = true;
 
   loadState();
 
@@ -101,8 +100,7 @@ export async function fetchAllTransactions(
     }
     transactions.push(...response.transactions);
     next = response.next;
-    fetchMore = !!JSON.parse(atob(next ?? '{}')).next;
-  } while (next && fetchMore);
+  } while (next);
   console.log('total transactions for pocket', transactions.length);
 
   // sort transactions
